@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  whisper-transcriber:
+    build: .
+    container_name: whisper-transcriber
+    restart: unless-stopped
+    
+    environment:
+      - NODE_ENV=production
+      - API_URL=${API_URL}
+      - API_TOKEN=${API_TOKEN}
+      - WHISPER_PATH=/app/whisper.cpp/main
+      - MODEL_PATH=/app/models/ggml-base.en.bin
+      - LANG=${LANG:-en}
+      
+    volumes:
+      # Dados persistentes
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./models:/app/models
+      
+      # Configuração personalizada
+      - ./.env:/app/.env:ro
+      
+      # Acesso ao dispositivo de áudio
+      - /dev/snd:/dev/snd
+      
+    devices:
+      # Microfone
+      - /dev/snd
+      
+    # Privilégios para acesso ao áudio
+    privileged: false
+    cap_add:
+      - SYS_NICE
+      
+    # Limites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Rede
+    network_mode: host
+    
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "node", "index.js", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+      
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Para desenvolvimento com hot reload
+  whisper-transcriber-dev:
+    build: .
+    container_name: whisper-transcriber-dev
+    restart: "no"
+    profiles:
+      - dev
+      
+    environment:
+      - NODE_ENV=development
+      - API_URL=${API_URL}
+      - API_TOKEN=${API_TOKEN}
+      
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /dev/snd:/dev/snd
+      
+    devices:
+      - /dev/snd
+      
+    command: ["npm", "run", "dev"]
+    
+# Volume nomeado para models (opcional)
+volumes:
+  whisper_models:
+    driver: local

@@ -1,0 +1,57 @@
+[Unit]
+Description=Whisper Transcriber Service
+Documentation=https://github.com/your-username/whisper-transcriber
+After=network.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=audio
+WorkingDirectory=/home/pi/whisper-transcriber
+
+# Comando principal
+ExecStart=/usr/bin/node index.js start
+
+# Recarregar configuração
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Limites de recursos
+MemoryLimit=1G
+CPUQuota=100%
+
+# Variáveis de ambiente
+Environment=NODE_ENV=production
+EnvironmentFile=/home/pi/whisper-transcriber/.env
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=whisper-transcriber
+
+# Segurança
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/pi/whisper-transcriber/data /home/pi/whisper-transcriber/logs
+
+# Acesso a dispositivos de áudio
+SupplementaryGroups=audio
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=15
+
+# Cleanup na parada
+ExecStopPost=/bin/bash -c 'if [ -f /home/pi/whisper-transcriber/data/temp/*.wav ]; then rm /home/pi/whisper-transcriber/data/temp/*.wav; fi'
+
+[Install]
+WantedBy=multi-user.target
+Alias=whisper.service

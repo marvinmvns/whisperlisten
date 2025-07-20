@@ -1,0 +1,28 @@
+# Core dependencies
+pyaudio==0.2.11
+webrtcvad==2.0.10
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Whisper dependencies
+pywhispercpp==1.2.0
+# Alternative: openai-whisper==20231117
+# Alternative: faster-whisper==0.10.0
+
+# Audio processing
+numpy==1.24.3
+scipy==1.11.4
+
+# Queue management
+sqlite3  # Built-in
+
+# System monitoring
+psutil==5.9.6
+
+# Optional: Web interface
+# flask==3.0.0
+# flask-cors==4.0.0
+
+# Development
+# pytest==7.4.3
+# black==23.11.0
